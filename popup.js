@@ -161,38 +161,59 @@ function formatAnswer(text) {
 
   let html = text;
 
-  // 1. CODE BLOCKS: Triple backticks (handled first to protect content)
+  // 1. CODE BLOCKS: Triple backticks
   html = html.replace(
     /^```(?:[a-z]+)?\n([\s\S]*?)\n```/gm,
     "<pre><code>$1</code></pre>"
   );
 
-  // 2. HEADINGS: # H1, ## H2, ### H3
+  // 2. HORIZONTAL RULES
+  html = html.replace(/^(\*\*\*|---|___)\s*$/gm, "<hr>");
+
+  // 3. HEADINGS: # H1, ## H2, ### H3
   html = html.replace(/^### (.*$)/gm, "<h3>$1</h3>");
   html = html.replace(/^## (.*$)/gm, "<h2>$1</h2>");
   html = html.replace(/^# (.*$)/gm, "<h1>$1</h1>");
 
-  // 3. LISTS: Lines starting with * or - or 1.
-  // Unordered list
-  html = html.replace(/^\s*[\*\-]\s+(.*)/gm, "<li>$1</li>");
-  // Wrap <li> groups in <ul>
-  html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
+  // 4. BLOCKQUOTES
+  html = html.replace(/^>\s?(.*)/gm, "<blockquote>$1</blockquote>");
 
-  // 4. BOLD & ITALIC
+  // 5. LISTS
+  // Ordered list (1. 2. 3.)
+  html = html.replace(/^\s*\d+\.\s+(.*)/gm, "<li>$1</li>");
+  // Unordered list (- or *)
+  html = html.replace(/^\s*[\*\-]\s+(.*)/gm, "<li>$1</li>");
+  // Wrap consecutive <li> in <ul> or <ol>
+  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, "<ul>$1</ul>");
+
+  // 6. BOLD & ITALIC
   html = html.replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>");
   html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
 
-  // 5. INLINE CODE: Single backticks
+  // 7. INLINE CODE: Single backticks
   html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
 
-  // 6. LINE BREAKS (only for non-list, non-heading lines)
-  // We split by tags and add <br> to plain text segments
-  return html
-    .split(/(<[^>]*>)/g)
+  // 8. LINKS [text](url)
+  html = html.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" target="_blank">$1</a>'
+  );
+
+  // 9. IMAGES ![alt](url)
+  html = html.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)/g,
+    '<img src="$2" alt="$1" style="max-width:100%;border-radius:4px;margin:5px 0;">'
+  );
+
+  // 10. LINE BREAKS for non-tag text
+  html = html
+    .split(/(<[^>]+>)/g)
     .map((part) => {
       if (part.startsWith("<")) return part;
       return part.replace(/\n/g, "<br>");
     })
     .join("");
+
+  return html;
 }

@@ -51,16 +51,6 @@ h2 {
   color: #9cdcfe;
 } /* Slightly different blue */
 
-/* Lists */
-#answerContent ul {
-  padding-left: 20px;
-  margin: 10px 0;
-}
-
-#answerContent li {
-  margin-bottom: 5px;
-}
-
 /* The block of code */
 pre {
   background-color: #282c34; /* Dark background like VS Code */
