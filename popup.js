@@ -127,24 +127,38 @@ function forceRefresh() {
   });
 }
 
-/**
- * Simple helper to format AI text
- * - Wraps `code` in <code> tags
- * - Converts newlines to <br>
- */
+
 function formatAnswer(text) {
   if (!text) return "";
 
-  let formatted = text;
+  let html = text;
 
-  // Improved Regex: This now ignores leading spaces before the backticks
-  formatted = formatted.replace(/^\s*```(?:[a-z]+)?\n([\s\S]*?)\n\s*```/gm, '<pre><code>$1</code></pre>');
+  // 1. CODE BLOCKS: Triple backticks (handled first to protect content)
+  html = html.replace(/^```(?:[a-z]+)?\n([\s\S]*?)\n```/gm, '<pre><code>$1</code></pre>');
 
-  // Handle Bold
-  formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // 2. HEADINGS: # H1, ## H2, ### H3
+  html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
 
-  // Handle Newlines (skipping content inside <pre> tags)
-  return formatted.split(/(<pre[\s\S]*?<\/pre>)/g).map(part => {
-    return part.startsWith('<pre') ? part : part.replace(/\n/g, '<br>');
+  // 3. LISTS: Lines starting with * or - or 1.
+  // Unordered list
+  html = html.replace(/^\s*[\*\-]\s+(.*)/gm, '<li>$1</li>');
+  // Wrap <li> groups in <ul>
+  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+  // 4. BOLD & ITALIC
+  html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // 5. INLINE CODE: Single backticks
+  html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+
+  // 6. LINE BREAKS (only for non-list, non-heading lines)
+  // We split by tags and add <br> to plain text segments
+  return html.split(/(<[^>]*>)/g).map(part => {
+    if (part.startsWith('<')) return part;
+    return part.replace(/\n/g, '<br>');
   }).join('');
 }

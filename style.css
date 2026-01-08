@@ -21,11 +21,33 @@ h2 {
 }
 
 /* Container for the whole answer */
+/* Reset and Base Styling */
 #answerContent {
-  font-family: 'Segoe UI', Tahoma, sans-serif;
+  color: #d4d4d4;
+  line-height: 1.6;
   font-size: 14px;
-  line-height: 1.5;
-  color: #333;
+}
+
+/* Headers */
+#answerContent h1, #answerContent h2, #answerContent h3 {
+  color: #4fc1ff;
+  margin: 15px 0 8px 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+#answerContent h1 { font-size: 1.4em; border-bottom: 1px solid #333; padding-bottom: 4px; }
+#answerContent h2 { font-size: 1.2em; }
+#answerContent h3 { font-size: 1.1em; color: #9cdcfe; } /* Slightly different blue */
+
+/* Lists */
+#answerContent ul {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+#answerContent li {
+  margin-bottom: 5px;
 }
 
 /* The block of code */
@@ -38,19 +60,26 @@ pre {
   margin: 10px 0;
 }
 
+/* Styling for Single Backtick Inline Code */
+.inline-code {
+  background-color: #4e555f !important; /* Lighter grey-blue */
+  color: #ffffff !important;           /* Pure white text for clarity */
+  padding: 2px 5px !important;
+  border-radius: 4px !important;
+  font-family: 'Consolas', 'Monaco', monospace !important;
+  font-size: 0.9em !important;
+  border: 1px solid #606975 !important;
+  display: inline-block;
+  line-height: 1.2;
+}
+
 /* The actual text inside code tags */
 code {
   font-family: 'Consolas', 'Courier New', monospace;
   font-size: 13px;
 }
 
-/* Specific styling for inline code (e.g. `const x`) */
-p > code {
-  background-color: #eee;
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: #d73a49;
-}
+
 
 /* Bold text styling */
 strong {
@@ -58,8 +87,9 @@ strong {
   font-weight: 700;
 }
 
-b, strong {
-  color: #dcdcaa;
+strong, b {
+  color: #4fc1ff; /* Bright blue for key terms in your personal docs */
+  font-weight: 700;
 }
 
 hr {
