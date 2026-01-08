@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Daily Dev Byte",
+  "version": "1.0",
+  "description": "Learn one dev concept daily with Gemini AI.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage"]
+}
