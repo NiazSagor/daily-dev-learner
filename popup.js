@@ -1,39 +1,131 @@
 // popup.js
 
 // 1. Replace this with your Google Apps Script Web App URL
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby7bMsNog8zuidWMfpkHd_MyLgjlUsTY56nPySRkS6aEH7H9AZdnKqnsQGdJFEzbuCk/exec";
+const WEB_APP_URL = CONFIG.WEB_APP_URL;
+const MY_SECRET_TOKEN = CONFIG.MY_SECRET_TOKEN;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async () => {
+
+  const mainScreen = document.getElementById('mainScreen');
+  const settingsScreen = document.getElementById('settingsScreen');
+
+  // Navigation Buttons
+  document.getElementById('goToSettings').onclick = () => {
+    loadSettingsInputs();
+    switchScreen('settings');
+  };
+
+  document.getElementById('backToMain').onclick = () => switchScreen('main');
+
+  // Save Settings Logic
+  document.getElementById('saveSettings').onclick = () => {
+    const sheetId = document.getElementById('sheetIdInput').value;
+    const apiKey = document.getElementById('apiKeyInput').value;
+
+    chrome.storage.sync.set({ sheetId, geminiKey: apiKey }, () => {
+      // Clear cache so it fetches fresh for the new sheet/key
+      chrome.storage.local.remove(['lastFetchDate', 'cachedData'], () => {
+        window.location.reload(); 
+      });
+    });
+  };
+
+  // Helper: Switch between screens
+  function switchScreen(screen) {
+    if (screen === 'settings') {
+      mainScreen.classList.remove('active');
+      settingsScreen.classList.add('active');
+    } else {
+      settingsScreen.classList.remove('active');
+      mainScreen.classList.add('active');
+    }
+  }
+
+  // Helper: Pre-fill inputs from storage
+  function loadSettingsInputs() {
+    chrome.storage.sync.get(['sheetId', 'geminiKey'], (data) => {
+      if (data.sheetId) document.getElementById('sheetIdInput').value = data.sheetId;
+      if (data.geminiKey) document.getElementById('apiKeyInput').value = data.geminiKey;
+    });
+  }
+
   const questionElement = document.getElementById('questionTitle');
   const answerElement = document.getElementById('answerContent');
 
-  console.log("Attempting to fetch from:", WEB_APP_URL);
-
-  // 2. The Fetch call with Redirect handling
-  fetch(WEB_APP_URL)
-    .then(response => {
-      // Check if the response is a redirect (Google Apps Script quirk)
-      if (response.status === 302 || response.type === 'opaqueredirect') {
-        console.warn("Redirect detected. Browsers usually handle this, but checking response...");
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log("Success! Data received:", data);
+  // 1. Get Settings (IDs/Keys) and Cache from storage
+  chrome.storage.sync.get(['sheetId', 'geminiKey'], async (settings) => {
+    chrome.storage.local.get(['lastId', 'lastFetchDate', 'cachedData'], async (cache) => {
       
-      // 3. Display the Question
-      questionElement.textContent = data.question;
+      const { sheetId, geminiKey } = settings;
+      const today = new Date().toLocaleDateString();
 
-      // 4. Format and Display the Answer
-      // Using innerHTML to allow for basic formatting (like code tags)
-      answerElement.innerHTML = formatAnswer(data.answer);
-      answerElement.classList.remove('loader');
-    })
-    .catch(error => {
-      console.error('Fetch Error:', error);
-      answerElement.textContent = "Error: " + error.message + ". Make sure your Apps Script is deployed as 'Anyone'.";
+      // 2. Check if we already have today's content cached
+      if (cache.lastFetchDate === today && cache.cachedData) {
+        console.log("Loading from cache...");
+        displayData(cache.cachedData);
+        return;
+      }
+
+      // 3. If it's a new day or no cache, fetch from Apps Script
+      if (!sheetId) {
+        answerElement.innerHTML = "Please configure your settings in Options.";
+        return;
+      }
+
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            token: MY_SECRET_TOKEN,
+            sheetId: sheetId,
+            lastId: cache.lastId || 0 // Send 0 if it's the first time
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) throw new Error(data.error);
+
+        // 4. Update Cache and Display
+        chrome.storage.local.set({
+          lastId: data.currentId,
+          lastFetchDate: today,
+          cachedData: data
+        });
+
+        displayData(data);
+
+      } catch (err) {
+        console.error("Fetch failed:", err);
+        answerElement.textContent = "Error fetching new byte: " + err.message;
+      }
     });
+  });
+
+  function displayData(data) {
+    questionElement.textContent = data.question;
+    answerElement.innerHTML = formatAnswer(data.answer);
+    answerElement.classList.remove('loader');
+  }
 });
+
+document.getElementById('refreshBtn').addEventListener('click', function() {
+  const btn = this;
+  btn.classList.add('spinning'); // Add animation
+  
+  // 1. Remove the cached date and content
+  chrome.storage.local.remove(['lastFetchDate', 'cachedData'], () => {
+    // 2. Reload the popup logic to trigger a fresh fetch
+    // Since lastFetchDate is gone, the main fetch logic will hit the API
+    window.location.reload();
+  });
+});
+
+function forceRefresh() {
+  chrome.storage.local.remove(['lastFetchDate', 'cachedData'], () => {
+    location.reload(); // This triggers the logic above to fetch new data
+  });
+}
 
 /**
  * Simple helper to format AI text
@@ -45,24 +137,14 @@ function formatAnswer(text) {
 
   let formatted = text;
 
-  // 1. Handle Code Blocks (```code```)
-  // This wraps them in <pre><code> tags for the block look
-  formatted = formatted.replace(/```(?:[a-z]+)?\n([\s\S]*?)\n```/g, '<pre><code>$1</code></pre>');
+  // Improved Regex: This now ignores leading spaces before the backticks
+  formatted = formatted.replace(/^\s*```(?:[a-z]+)?\n([\s\S]*?)\n\s*```/gm, '<pre><code>$1</code></pre>');
 
-  // 2. Handle Inline Code (`code`)
-  formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-  // 3. Handle Bold Text (**text**)
+  // Handle Bold
   formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-  // 4. Handle New Lines
-  // We only want to add <br> to lines that ARE NOT inside a <pre> tag
-  // A simple way is to split by the pre tags and apply breaks to the rest
+  // Handle Newlines (skipping content inside <pre> tags)
   return formatted.split(/(<pre[\s\S]*?<\/pre>)/g).map(part => {
-    if (part.startsWith('<pre')) {
-      return part; // Don't touch code blocks
-    } else {
-      return part.replace(/\n/g, '<br>'); // Convert newlines to breaks for regular text
-    }
+    return part.startsWith('<pre') ? part : part.replace(/\n/g, '<br>');
   }).join('');
 }

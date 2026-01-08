@@ -67,3 +67,72 @@ hr {
   border-top: 1px solid #333;
   margin: 10px 0;
 }
+
+.header {
+  display: flex;
+  justify-content: space-between; /* This pushes items to the opposite ends */
+  align-items: center;           /* Vertically centers the text and icon */
+  border-bottom: 1px solid #333;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  width: 100%;                   /* Ensures it spans the full popup width */
+}
+
+.header h1 {
+  font-size: 14px;
+  margin: 0;
+  color: #4fc1ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.icon-btn:hover {
+  background-color: #333; /* Darker grey highlight */
+  color: #4fc1ff; /* Accent color on hover */
+}
+
+.icon-btn svg {
+  pointer-events: none; /* Ensures the click registers on the button, not the SVG path */
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease; /* Adds the smooth fade */
+  display: flex;
+}
+
+.icon-btn:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#refreshBtn:hover svg {
+  transform: rotate(45deg);
+  transition: transform 0.3s ease;
+}
+
+#refreshBtn.spinning svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
