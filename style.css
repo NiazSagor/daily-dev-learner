@@ -20,23 +20,42 @@ h2 {
   padding-left: 10px;
 }
 
+/* Container for the whole answer */
 #answerContent {
-  font-size: 13px;
-  line-height: 1.6;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
 }
 
-/* Styling for the code blocks */
+/* The block of code */
 pre {
-  background-color: #2d2d2d;
-  padding: 10px;
-  border-radius: 5px;
-  overflow-x: auto;
-  border: 1px solid #444;
+  background-color: #282c34; /* Dark background like VS Code */
+  color: #abb2bf;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto; /* Scroll horizontally if code is long */
+  margin: 10px 0;
 }
 
+/* The actual text inside code tags */
 code {
-  font-family: 'Consolas', 'Monaco', monospace;
-  color: #ce9178;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+}
+
+/* Specific styling for inline code (e.g. `const x`) */
+p > code {
+  background-color: #eee;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #d73a49;
+}
+
+/* Bold text styling */
+strong {
+  color: #000;
+  font-weight: 700;
 }
 
 b, strong {

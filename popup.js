@@ -42,15 +42,27 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function formatAnswer(text) {
   if (!text) return "";
-  
-  // Replace triple backticks (code blocks)
-  let formatted = text.replace(/```(?:[a-z]+)?\n([\s\S]*?)\n```/g, '<pre><code>$1</code></pre>');
-  
-  // Replace single backticks (inline code)
+
+  let formatted = text;
+
+  // 1. Handle Code Blocks (```code```)
+  // This wraps them in <pre><code> tags for the block look
+  formatted = formatted.replace(/```(?:[a-z]+)?\n([\s\S]*?)\n```/g, '<pre><code>$1</code></pre>');
+
+  // 2. Handle Inline Code (`code`)
   formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-  
-  // Convert newlines to breaks for readability
-  formatted = formatted.replace(/\n/g, '<br>');
-  
-  return formatted;
+
+  // 3. Handle Bold Text (**text**)
+  formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // 4. Handle New Lines
+  // We only want to add <br> to lines that ARE NOT inside a <pre> tag
+  // A simple way is to split by the pre tags and apply breaks to the rest
+  return formatted.split(/(<pre[\s\S]*?<\/pre>)/g).map(part => {
+    if (part.startsWith('<pre')) {
+      return part; // Don't touch code blocks
+    } else {
+      return part.replace(/\n/g, '<br>'); // Convert newlines to breaks for regular text
+    }
+  }).join('');
 }
