@@ -80,56 +80,60 @@ document.addEventListener("DOMContentLoaded", async () => {
   const answerElement = document.getElementById("answerContent");
 
   // 1. Get Settings (IDs/Keys) and Cache from storage
-  chrome.storage.sync.get(["sheetId", "geminiKey"], async (settings) => {
-    chrome.storage.local.get(
-      ["lastId", "lastFetchDate", "cachedData"],
-      async (cache) => {
-        const { sheetId, geminiKey } = settings;
-        const today = new Date().toLocaleDateString();
+  chrome.storage.local.get(
+    ["sheetId", "geminiKey", "useAi", "lastId", "lastFetchDate", "cachedData"],
+    async (data) => {
+      // Destructure for cleaner access
+      const { sheetId, useAi, lastId, lastFetchDate, cachedData } = data;
+      const today = new Date().toLocaleDateString();
 
-        // 2. Check if we already have today's content cached
-        if (cache.lastFetchDate === today && cache.cachedData) {
-          console.log("Loading from cache...");
-          displayData(cache.cachedData);
-          return;
-        }
+      // 2. Fix: Ensure useAi has a fallback value
+      // If the user hasn't toggled it yet, it might be undefined. We want it 'true' by default.
+      const isAiEnabled = useAi !== false;
 
-        // 3. If it's a new day or no cache, fetch from Apps Script
-        if (!sheetId) {
-          answerElement.innerHTML =
-            "Please configure your settings in Options.";
-          return;
-        }
+      console.log("Fetching response. useAi preferred state:", isAiEnabled);
 
-        try {
-          const response = await fetch(WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify({
-              token: MY_SECRET_TOKEN,
-              sheetId: sheetId,
-              lastId: cache.lastId || 0, // Send 0 if it's the first time
-            }),
-          });
-
-          const data = await response.json();
-
-          if (data.error) throw new Error(data.error);
-
-          // 4. Update Cache and Display
-          chrome.storage.local.set({
-            lastId: data.currentId,
-            lastFetchDate: today,
-            cachedData: data,
-          });
-
-          displayData(data);
-        } catch (err) {
-          console.error("Fetch failed:", err);
-          answerElement.textContent = "Error fetching new byte: " + err.message;
-        }
+      // 3. Cache Check
+      if (lastFetchDate === today && cachedData) {
+        console.log("Loading from cache...");
+        displayData(cachedData);
+        return;
       }
-    );
-  });
+
+      if (!sheetId) {
+        answerElement.innerHTML =
+          "Please configure your settings in Configuration.";
+        return;
+      }
+
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            token: MY_SECRET_TOKEN,
+            sheetId: sheetId,
+            useAi: isAiEnabled, // Send the explicit boolean
+            lastId: lastId || 0,
+          }),
+        });
+
+        const result = await response.json();
+        if (result.error) throw new Error(result.error);
+
+        // 4. Update Cache
+        chrome.storage.local.set({
+          lastId: result.currentId,
+          lastFetchDate: today,
+          cachedData: result,
+        });
+
+        displayData(result);
+      } catch (err) {
+        console.error("Fetch failed:", err);
+        answerElement.textContent = "Error fetching new byte: " + err.message;
+      }
+    }
+  );
 
   function displayData(data) {
     questionElement.textContent = data.question;
