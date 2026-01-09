@@ -1,7 +1,7 @@
 body {
   width: 350px;
   padding: 15px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #1e1e1e; /* Dark theme */
   color: #d4d4d4;
   margin: 0;
@@ -29,26 +29,27 @@ h2 {
 }
 
 /* Headers */
-#answerContent h1, #answerContent h2, #answerContent h3 {
+#answerContent h1,
+#answerContent h2,
+#answerContent h3 {
   color: #4fc1ff;
   margin: 15px 0 8px 0;
   font-weight: 600;
   line-height: 1.2;
 }
 
-#answerContent h1 { font-size: 1.4em; border-bottom: 1px solid #333; padding-bottom: 4px; }
-#answerContent h2 { font-size: 1.2em; }
-#answerContent h3 { font-size: 1.1em; color: #9cdcfe; } /* Slightly different blue */
-
-/* Lists */
-#answerContent ul {
-  padding-left: 20px;
-  margin: 10px 0;
+#answerContent h1 {
+  font-size: 1.4em;
+  border-bottom: 1px solid #333;
+  padding-bottom: 4px;
 }
-
-#answerContent li {
-  margin-bottom: 5px;
+#answerContent h2 {
+  font-size: 1.2em;
 }
+#answerContent h3 {
+  font-size: 1.1em;
+  color: #9cdcfe;
+} /* Slightly different blue */
 
 /* The block of code */
 pre {
@@ -63,10 +64,10 @@ pre {
 /* Styling for Single Backtick Inline Code */
 .inline-code {
   background-color: #4e555f !important; /* Lighter grey-blue */
-  color: #ffffff !important;           /* Pure white text for clarity */
+  color: #ffffff !important; /* Pure white text for clarity */
   padding: 2px 5px !important;
   border-radius: 4px !important;
-  font-family: 'Consolas', 'Monaco', monospace !important;
+  font-family: "Consolas", "Monaco", monospace !important;
   font-size: 0.9em !important;
   border: 1px solid #606975 !important;
   display: inline-block;
@@ -75,11 +76,9 @@ pre {
 
 /* The actual text inside code tags */
 code {
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: "Consolas", "Courier New", monospace;
   font-size: 13px;
 }
-
-
 
 /* Bold text styling */
 strong {
@@ -87,7 +86,8 @@ strong {
   font-weight: 700;
 }
 
-strong, b {
+strong,
+b {
   color: #4fc1ff; /* Bright blue for key terms in your personal docs */
   font-weight: 700;
 }
@@ -101,11 +101,11 @@ hr {
 .header {
   display: flex;
   justify-content: space-between; /* This pushes items to the opposite ends */
-  align-items: center;           /* Vertically centers the text and icon */
+  align-items: center; /* Vertically centers the text and icon */
   border-bottom: 1px solid #333;
   padding-bottom: 8px;
   margin-bottom: 15px;
-  width: 100%;                   /* Ensures it spans the full popup width */
+  width: 100%; /* Ensures it spans the full popup width */
 }
 
 .header h1 {
@@ -162,7 +162,10 @@ hr {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
-
